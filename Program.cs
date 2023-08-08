@@ -68,11 +68,22 @@ namespace EXE_Detect_IP
 		static string GetIpCualEsMiIP()
 		{
 			String address = "";
-			address = DownloadHtml("https://www.cual-es-mi-ip.net/", "CualEsMiIP.html");
 
-			int first = address.IndexOf("Tu dirección IP es") + 53;
-			int last = address.LastIndexOf("</span>");
-			address = address.Substring(first, last - first);
+			try
+			{ 	
+				address = DownloadHtml("https://www.cual-es-mi-ip.net/", "CualEsMiIP.html");
+
+				int first = address.IndexOf("Tu dirección IP es") + 53;
+				int last = address.LastIndexOf("</span>");
+				address = address.Substring(first, last - first);
+			}
+			catch (Exception ex)
+			{ 
+				Console.WriteLine(ex.Message);
+
+				address = "No se ha podido obtener la IP desde este servidor.";
+			}
+
 
 			return address;
 		}
@@ -81,13 +92,26 @@ namespace EXE_Detect_IP
 		{
 			String address = "";
 			address = DownloadWebResult("http://checkip.dyndns.org/");
-
-			if (!string.IsNullOrEmpty(address))
+									
+			try
 			{
-				int first = address.IndexOf("Address: ") + 9;
-				int last = address.LastIndexOf("</body>");
-				address = address.Substring(first, last - first);
-			}			
+				if (!string.IsNullOrEmpty(address))
+				{
+					int first = address.IndexOf("Address: ") + 9;
+					int last = address.LastIndexOf("</body>");
+					address = address.Substring(first, last - first);
+				}
+				else
+				{
+					address = "No se ha podido obtener la IP desde este servidor.";
+				}
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.Message);
+
+				address = "No se ha podido obtener la IP desde este servidor.";
+			}
 
 			return address;
 		}
@@ -97,6 +121,7 @@ namespace EXE_Detect_IP
 		{
 			String address = "";	
 			address = DownloadWebResult("https://ifconfig.me/ip");
+
 			return address;
 		}
 
@@ -106,14 +131,17 @@ namespace EXE_Detect_IP
 			address = DownloadHtml("https://www.cual-es-mi-direccion-ip.com/", "CualEsDireccionMiIP.html");
 
 			if (!string.IsNullOrEmpty(address))
-			{ 
+			{
 				int first = address.IndexOf("/ip-info/") + 9;
 				address = address.Substring(first);
 
-				int last = address.IndexOf(">")-1;
+				int last = address.IndexOf(">") - 1;
 				address = address.Substring(0, last);
 			}
-			
+			else
+			{
+				address = "No se ha podido obtener la IP desde este servidor.";
+			}
 
 			return address;
 		}
@@ -130,6 +158,10 @@ namespace EXE_Detect_IP
 
 				int last = address.IndexOf("</h2>") ;
 				address = address.Substring(0, last);
+			}
+			else
+			{
+				address = "No se ha podido obtener la IP desde este servidor.";
 			}
 
 			return address;
@@ -160,6 +192,8 @@ namespace EXE_Detect_IP
 			catch (Exception ex)
 			{ 
 				Console.WriteLine(ex.Message);
+
+				Resultado = "No se ha podido obtener la IP desde este servidor.";
 			}
 
 			return Resultado;
