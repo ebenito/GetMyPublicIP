@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HtmlAgilityPack;
+using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
@@ -6,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace EXE_Detect_IP
@@ -15,12 +17,17 @@ namespace EXE_Detect_IP
 		static async Task Main(string[] args)
 		{
 			string IP = GetIpLocal();
-			Console.WriteLine(String.Format("IP privada: {0} (Host: {1})", IP, GetHost()));			
+			Console.WriteLine(String.Format("IP privada: {0} (Host: {1})", IP, GetHost()));
+			Console.WriteLine("");
 
+			string IpF = await GetIpIpinfo();
+			Console.WriteLine("IP pública según ipinfo.io (el más confiable): " + IpF);
+
+			string IpG = await GetIpIONOS();
+			Console.WriteLine("IP pública según IONOS.es: " + IpG);
 
 			string IpA = GetIpCualEsMiIP();
 			Console.WriteLine("IP pública según cual-es-mi-ip.net: " + IpA);
-
 
 			string IpB = GetIpDydns();
 			Console.WriteLine("IP pública según dyndns.org: " + IpB);
@@ -31,11 +38,11 @@ namespace EXE_Detect_IP
 			string IpD = GetIpCualEsDireccionMiIP();
 			Console.WriteLine("IP pública según cual-es-mi-direccion-ip.com: " + IpD);
 
-			String IpE = await GetIpMiIp();
+			string IpE = await GetIpMiIp();
 			Console.WriteLine("IP pública según miip.es: " + IpE);
 
-			string IpF = await GetIpIpinfo();
-			Console.WriteLine("IP pública según ipinfo.io: " + IpF);
+
+
 
 			Console.ReadKey();
 		}
@@ -74,8 +81,20 @@ namespace EXE_Detect_IP
 				address = DownloadHtml("https://www.cual-es-mi-ip.net/", "CualEsMiIP.html");
 
 				int first = address.IndexOf("Tu dirección IP es") + 53;
-				int last = address.LastIndexOf("</span>");
-				address = address.Substring(first, last - first);
+				address = address.Substring(first, 15);
+
+				string ipPattern = @"\b(?:\d{1,3}\.){3}\d{1,3}\b";
+				Match ipMatch = Regex.Match(address, ipPattern);
+
+				if (ipMatch.Success)
+				{
+					address = ipMatch.Value;
+				}
+				else
+				{
+					address = "No se encontró ninguna dirección IP.";
+				}
+
 			}
 			catch (Exception ex)
 			{ 
@@ -146,6 +165,7 @@ namespace EXE_Detect_IP
 			return address;
 		}
 
+
 		private static async Task<string> GetIpMiIp() //con métodos asincronos
 		{
 			String address = "";
@@ -163,6 +183,64 @@ namespace EXE_Detect_IP
 			{
 				address = "No se ha podido obtener la IP desde este servidor.";
 			}
+
+			return address;
+		}
+
+
+		private static async Task<string> GetIpIONOS() //con métodos asincronos
+		{
+			String address = "";
+			//address = await DownloadWebResultAsync("https://www.ionos.es/tools/direccion-ip");
+
+			//if (!string.IsNullOrEmpty(address))
+			//{
+			//	int first = address.IndexOf("<div class=\"text-md-center text-lg-center heading-1 ml-md-0 ml-lg-0 mw-lg-10 mw-md-10 mx-md-auto mx-lg-auto pt-12\">") + 117;
+			//	address = address.Substring(first);
+
+			//	int last = address.IndexOf("</div>");
+			//	address = address.Substring(0, last);
+			//}
+			//else
+			//{
+			//	address = "No se ha podido obtener la IP desde este servidor.";
+			//}
+
+			var url = "https://www.ionos.es/tools/direccion-ip";
+			var httpClient = new HttpClient();
+
+			// Configurar encabezados de solicitud
+			httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
+			httpClient.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+			httpClient.DefaultRequestHeaders.Add("Accept-Language", "es-ES,es;q=0.5");
+
+			try
+			{
+				var response = await httpClient.GetAsync(url);
+				var html = await response.Content.ReadAsStringAsync();
+
+				// Procesar el HTML:
+				var htmlDoc = new HtmlDocument();
+				htmlDoc.LoadHtml(html);
+
+				// Buscar por la clase del elemento que contiene la dirección IP
+				var ipNode = htmlDoc.DocumentNode.SelectSingleNode("//div[contains(@class,'heading-1')]");
+
+				if (ipNode != null)
+				{
+					address = ipNode.InnerText.Trim();
+				}
+				else
+				{
+					address = "No se pudo encontrar la dirección IP.";
+				}
+			}
+			catch (HttpRequestException e)
+			{
+				Console.WriteLine("\nExcepción capturada!");
+				Console.WriteLine("Mensaje :{0} ", e.Message);
+			}			
+
 
 			return address;
 		}
@@ -226,12 +304,19 @@ namespace EXE_Detect_IP
 		static async Task<string> DownloadWebResultAsync(string url)
 		{
 
-			HttpClient client = new HttpClient();
-			Task<string> getStringTask = client.GetStringAsync(url);
+			try
+			{
+				HttpClient client = new HttpClient();
+				Task<string> getStringTask = client.GetStringAsync(url);
 
-			String urlContents = await getStringTask;
+				String urlContents = await getStringTask;
 
-			return urlContents;
+				return urlContents;
+			}
+			catch (Exception)
+			{
+				throw;
+			}
 		}
 
 	}
