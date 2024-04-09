@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Security.Policy;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -23,7 +24,10 @@ namespace EXE_Detect_IP
 			string IpF = await GetIpIpinfo();
 			Console.WriteLine("IP pública según ipinfo.io (el más confiable): " + IpF);
 
-			string IpG = await GetIpIONOS();
+			//string IpH = GetIpCdMon();
+			//Console.WriteLine("IP pública según cdmon.com: " + IpH);
+
+            string IpG = await GetIpIONOS();
 			Console.WriteLine("IP pública según IONOS.es: " + IpG);
 
 			string IpA = GetIpCualEsMiIP();
@@ -135,8 +139,43 @@ namespace EXE_Detect_IP
 			return address;
 		}
 
+        static string GetIpCdMon()
+        {
+            String address = "";
+           
+			           
+            try
+            {
+				address = DownloadWebResult("https://www.cdmon.com/es/apps/ip");              
 
-		static string GetIpIfconfig()
+                // Procesar el HTML:
+                var htmlDoc = new HtmlDocument();
+                htmlDoc.LoadHtml(address);
+
+                // Buscar por la clase del elemento que contiene la dirección IP
+                var ipNode = htmlDoc.DocumentNode.SelectSingleNode("//div[contains(@class,'ip_ip-container__Diy4K')]");
+
+                if (ipNode != null)
+                {
+                    address = ipNode.InnerText.Trim();
+                }
+                else
+                {
+                    address = "No se pudo encontrar la dirección IP.";
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+
+                address = "No se ha podido obtener la IP desde este servidor.";
+            }
+
+
+            return address;
+        }
+
+        static string GetIpIfconfig()
 		{
 			String address = "";	
 			address = DownloadWebResult("https://ifconfig.me/ip");
@@ -260,8 +299,14 @@ namespace EXE_Detect_IP
 			String Resultado = "";
 			try
 			{
-				WebRequest request = WebRequest.Create(url);
-				using (WebResponse response = request.GetResponse())
+				//WebRequest request = WebRequest.Create(url);
+                HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(url);
+                httpWebRequest.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) ) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.945.0 Safari/537.36 Edg/93.0.961.0";
+                httpWebRequest.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
+                httpWebRequest.Headers.Add("Accept-Language", "es-ES,es;q=0.5");
+				httpWebRequest.Referer = "https://www.bing.com/";
+
+                using (WebResponse response = httpWebRequest.GetResponse())
 				using (StreamReader stream = new StreamReader(response.GetResponseStream()))
 				{
 					Resultado = stream.ReadToEnd();
