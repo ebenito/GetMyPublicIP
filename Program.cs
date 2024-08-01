@@ -22,34 +22,62 @@ namespace EXE_Detect_IP
 			Console.WriteLine("");
 
 			string IpF = await GetIpIpinfo();
-			Console.WriteLine("IP pública según ipinfo.io (el más confiable): " + IpF);
+            //Console.WriteLine("IP pública según ipinfo.io (el más confiable): " + IpF);
+            MuestraInfo("IPInfo", "https://ipinfo.io/", IpF);
 
-			//string IpH = GetIpCdMon();
-			//Console.WriteLine("IP pública según cdmon.com: " + IpH);
+            //string IpH = GetIpCdMon();
+            //Console.WriteLine("IP pública según cdmon.com: " + IpH);
+            MuestraInfo("cdmon", "https://www.cdmon.com/es/apps/ip", "-- Visitar página");
 
-            string IpG = await GetIpIONOS();
-			Console.WriteLine("IP pública según IONOS.es: " + IpG);
+            //string IpG = await GetIpIONOS();
+            //Console.WriteLine("IP pública según IONOS.es: " + IpG);
+            MuestraInfo("IONOS", "https://www.ionos.es/tools/direccion-ip", "-- Visitar página");
 
-			string IpA = GetIpCualEsMiIP();
-			Console.WriteLine("IP pública según cual-es-mi-ip.net: " + IpA);
+            string IpA = GetIpCualEsMiIP();
+            //Console.WriteLine("IP pública según cual-es-mi-ip.net: " + IpA);
+            MuestraInfo("CualEsMiIP", "https://www.cual-es-mi-ip.net/", IpA);
 
-			string IpB = GetIpDydns();
-			Console.WriteLine("IP pública según dyndns.org: " + IpB);
+            string IpB = GetIpDydns();
+            //Console.WriteLine("IP pública según dyndns.org: " + IpB);
+            MuestraInfo("dyndns.org", "http://checkip.dyndns.com/", IpB);
 
-			string IpC = GetIpIfconfig();
-			Console.WriteLine("IP pública según ifconfig.me: " + IpC);
+            string IpC = GetIpIfconfig();
+            //Console.WriteLine("IP pública según ifconfig.me: " + IpC);
+            MuestraInfo("ifconfig.me", "https://ifconfig.me/", IpC);
 
-			string IpD = GetIpCualEsDireccionMiIP();
-			Console.WriteLine("IP pública según cual-es-mi-direccion-ip.com: " + IpD);
+            string IpD = GetIpCualEsDireccionMiIP();
+            //Console.WriteLine("IP pública según cual-es-mi-direccion-ip.com: " + IpD);
+            MuestraInfo("cual-es-mi-direccion-ip.com", "https://www.cual-es-mi-direccion-ip.com/", IpD);
 
-			string IpE = await GetIpMiIp();
-			Console.WriteLine("IP pública según miip.es: " + IpE);
+            string IpE = await GetIpMiIp();
+            //Console.WriteLine("IP pública según miip.es: " + IpE);
+            MuestraInfo("miip.es", "https://miip.es/", IpE);
 
 
-
-
-			Console.ReadKey();
+            Console.ReadKey();
 		}
+
+		private static void MuestraInfo(string nombre, string url, string ip)
+		{
+            Console.Write("IP pública según ");
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
+			Console.Write(nombre);
+			Console.ResetColor();
+
+			Console.Write(" (");
+            Console.ForegroundColor = ConsoleColor.DarkCyan;
+            Console.Write(url);
+            Console.ResetColor();
+            Console.Write("): ");
+
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
+            Console.Write(ip);
+            Console.ResetColor();
+
+			Console.WriteLine();
+            Console.WriteLine();
+        }
+
 
 		static string GetIpLocal()
 		{
@@ -146,23 +174,27 @@ namespace EXE_Detect_IP
 			           
             try
             {
-				address = DownloadWebResult("https://www.cdmon.com/es/apps/ip");              
+				//address = DownloadWebResult("https://www.cdmon.com/es/apps/ip");
 
                 // Procesar el HTML:
-                var htmlDoc = new HtmlDocument();
-                htmlDoc.LoadHtml(address);
+                //var htmlDoc = new HtmlDocument();
+                //htmlDoc.LoadHtml(address);
 
-                // Buscar por la clase del elemento que contiene la dirección IP
-                var ipNode = htmlDoc.DocumentNode.SelectSingleNode("//div[contains(@class,'ip_ip-container__Diy4K')]");
+                //// Buscar por la clase del elemento que contiene la dirección IP
+                //var ipNode = htmlDoc.DocumentNode.SelectSingleNode("//div[contains(@class,'ip_ip-container__Diy4K')]");
 
-                if (ipNode != null)
-                {
-                    address = ipNode.InnerText.Trim();
-                }
-                else
-                {
-                    address = "No se pudo encontrar la dirección IP.";
-                }
+                //if (ipNode != null)
+                //{
+                //    address = ipNode.InnerText.Trim();
+                //}
+                //else
+                //{
+                //    address = "No se pudo encontrar la dirección IP.";
+                //}
+
+                string url = "https://www.cdmon.com/es/apps/ip";
+                string coloredUrl = "\u001b[36m" + url + "\u001b[0m"; // \u001b[36m es el código ANSI para el color cian claro
+                Console.WriteLine("Haz clic en el siguiente enlace: " + coloredUrl);
             }
             catch (Exception ex)
             {
@@ -177,7 +209,7 @@ namespace EXE_Detect_IP
 
         static string GetIpIfconfig()
 		{
-			String address = "";	
+            String address = "";	
 			address = DownloadWebResult("https://ifconfig.me/ip");
 
 			return address;
