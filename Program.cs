@@ -17,65 +17,83 @@ namespace EXE_Detect_IP
 	{
 		static async Task Main(string[] args)
 		{
-			string IP = GetIpLocal();
-			Console.WriteLine(String.Format("IP privada: {0} (Host: {1})", IP, GetHost()));
-			Console.WriteLine("");
+			try
+			{
+				string IP = GetIpLocal();
+				Console.WriteLine(String.Format("IP privada: {0} (Host: {1})", IP, GetHost()));
+				Console.WriteLine("");
 
-			string IpF = await GetIpIpinfo();
-            //Console.WriteLine("IP pública según ipinfo.io (el más confiable): " + IpF);
-            MuestraInfo("IPInfo", "https://ipinfo.io/", IpF);
+				string IpF = await GetIpIpinfo();
+				//Console.WriteLine("IP pública según ipinfo.io (el más confiable): " + IpF);
+				MuestraInfo("IPInfo", "https://ipinfo.io/", IpF);
 
-            //string IpH = GetIpCdMon();
-            //Console.WriteLine("IP pública según cdmon.com: " + IpH);
-            MuestraInfo("cdmon", "https://www.cdmon.com/es/apps/ip", "-- Visitar página");
+				//string IpH = GetIpCdMon();
+				//Console.WriteLine("IP pública según cdmon.com: " + IpH);
+				MuestraInfo("cdmon", "https://www.cdmon.com/es/apps/ip", "-- Visitar página");
 
-            //string IpG = await GetIpIONOS();
-            //Console.WriteLine("IP pública según IONOS.es: " + IpG);
-            MuestraInfo("IONOS", "https://www.ionos.es/tools/direccion-ip", "-- Visitar página");
+				//string IpG = await GetIpIONOS();
+				//Console.WriteLine("IP pública según IONOS.es: " + IpG);
+				MuestraInfo("IONOS", "https://www.ionos.es/tools/direccion-ip", "-- Visitar página");
 
-            string IpA = GetIpCualEsMiIP();
-            //Console.WriteLine("IP pública según cual-es-mi-ip.net: " + IpA);
-            MuestraInfo("CualEsMiIP", "https://www.cual-es-mi-ip.net/", IpA);
+				string IpA = GetIpCualEsMiIP();
+				//Console.WriteLine("IP pública según cual-es-mi-ip.net: " + IpA);
+				MuestraInfo("CualEsMiIP", "https://www.cual-es-mi-ip.net/", IpA);
 
-            string IpB = GetIpDydns();
-            //Console.WriteLine("IP pública según dyndns.org: " + IpB);
-            MuestraInfo("dyndns.org", "http://checkip.dyndns.com/", IpB);
+				string IpB = GetIpDydns();
+				//Console.WriteLine("IP pública según dyndns.org: " + IpB);
+				MuestraInfo("dyndns.org", "http://checkip.dyndns.com/", IpB);
 
-            string IpC = GetIpIfconfig();
-            //Console.WriteLine("IP pública según ifconfig.me: " + IpC);
-            MuestraInfo("ifconfig.me", "https://ifconfig.me/", IpC);
+				string IpC = GetIpIfconfig();
+				//Console.WriteLine("IP pública según ifconfig.me: " + IpC);
+				MuestraInfo("ifconfig.me", "https://ifconfig.me/", IpC);
 
-            string IpD = GetIpCualEsDireccionMiIP();
-            //Console.WriteLine("IP pública según cual-es-mi-direccion-ip.com: " + IpD);
-            MuestraInfo("cual-es-mi-direccion-ip.com", "https://www.cual-es-mi-direccion-ip.com/", IpD);
+				string IpD = await GetInfoByIP();
+				//Console.WriteLine("IP pública según cual-es-mi-direccion-ip.com: " + IpD);
+				MuestraInfo("infobyip.com", "https://www.infobyip.com/", IpD);
 
-            string IpE = await GetIpMiIp();
-            //Console.WriteLine("IP pública según miip.es: " + IpE);
-            MuestraInfo("miip.es", "https://miip.es/", IpE);
+				string IpE = await GetIpMiIp();
+				//Console.WriteLine("IP pública según miip.es: " + IpE);
+				MuestraInfo("miip.es", "https://miip.es/", IpE);
 
 
-            Console.ReadKey();
+				Console.ReadKey();
+			}
+			catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine("Ha ocurrido un error: " + ex.Message);
+                Console.ResetColor();
+            }
 		}
 
 		private static void MuestraInfo(string nombre, string url, string ip)
 		{
-            Console.Write("IP pública según ");
-            Console.ForegroundColor = ConsoleColor.DarkYellow;
-			Console.Write(nombre);
-			Console.ResetColor();
+			try
+			{
+				Console.Write("IP pública según ");
+				Console.ForegroundColor = ConsoleColor.DarkYellow;
+				Console.Write(nombre);
+				Console.ResetColor();
 
-			Console.Write(" (");
-            Console.ForegroundColor = ConsoleColor.DarkCyan;
-            Console.Write(url);
-            Console.ResetColor();
-            Console.Write("): ");
+				Console.Write(" (");
+				Console.ForegroundColor = ConsoleColor.DarkCyan;
+				Console.Write(url);
+				Console.ResetColor();
+				Console.Write("): ");
 
-            Console.ForegroundColor = ConsoleColor.DarkYellow;
-            Console.Write(ip);
-            Console.ResetColor();
+				Console.ForegroundColor = ConsoleColor.DarkYellow;
+				Console.Write(ip);
+				Console.ResetColor();
 
-			Console.WriteLine();
-            Console.WriteLine();
+				Console.WriteLine();
+				Console.WriteLine();
+			}
+			catch (Exception ex)
+			{
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine("Ha ocurrido un error al obtener información de " + nombre + ": " + ex.Message);
+                Console.ResetColor();
+            }
         }
 
 
@@ -217,6 +235,7 @@ namespace EXE_Detect_IP
 
 		static string GetIpCualEsDireccionMiIP()
 		{
+			//Paece que ha dejado de funcionar
 			String address = "";
 			address = DownloadHtml("https://www.cual-es-mi-direccion-ip.com/", "CualEsDireccionMiIP.html");
 
@@ -236,8 +255,49 @@ namespace EXE_Detect_IP
 			return address;
 		}
 
+        private static async Task<string> GetInfoByIP()
+        {
+            String address = "";
 
-		private static async Task<string> GetIpMiIp() //con métodos asincronos
+            try
+            {
+                address = await GetHtmlAsync("https://www.infobyip.com/");
+
+                //Procesar el HTML:
+                var htmlDoc = new HtmlDocument();
+				htmlDoc.LoadHtml(address);
+
+				// Buscar por la clase del elemento que contiene la dirección IP
+				var ipNode = htmlDoc.DocumentNode.SelectSingleNode("//span[contains(@id,'ipv4')]");
+
+				if (ipNode != null)
+				{
+					address = ipNode.InnerText.Trim();
+				}
+				else
+				{
+					address = "No se pudo encontrar la dirección IP.";
+				}
+
+				string url = "https://www.infobyip.com/";
+				string coloredUrl = "\u001b[36m" + url + "\u001b[0m"; // \u001b[36m es el código ANSI para el color cian claro
+				Console.WriteLine("Haz clic en el siguiente enlace: " + coloredUrl);
+			
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+
+                address = "No se ha podido obtener la IP desde este servidor.";
+            }
+
+
+            return address;
+        }
+
+
+
+        private static async Task<string> GetIpMiIp() //con métodos asincronos
 		{
 			String address = "";
 			address = await DownloadWebResultAsync("https://miip.es/");
@@ -396,5 +456,25 @@ namespace EXE_Detect_IP
 			}
 		}
 
-	}
+        static async Task<string> GetHtmlAsync(string url)
+        {
+            var handler = new HttpClientHandler
+            {
+                UseCookies = true,
+                CookieContainer = new CookieContainer()
+            };
+
+            using (HttpClient client = new HttpClient(handler))
+            {
+                client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3");
+                client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("es-ES,en;q=0.9");
+                client.DefaultRequestHeaders.Referrer = new Uri("https://www.google.com");
+
+                HttpResponseMessage response = await client.GetAsync(url);
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadAsStringAsync();
+            }
+        }
+    }
+
 }
